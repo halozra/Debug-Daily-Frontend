@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// Definisikan tipe untuk Post
 interface PostProps {
   title: string;
   description: string;
@@ -9,19 +8,19 @@ interface PostProps {
 }
 
 interface Post {
-  id: number;
+  _id: string;
   title: string;
   description: string;
   image: string;
 }
 
 function PostAll({ title, description, image }: PostProps) {
-  const fallbackImage = "https://via.placeholder.com/150"; // Fallback image URL
+  const fallbackImage = "https://via.placeholder.com/150";
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 transition-transform hover:scale-110 ">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 transition-transform hover:scale-110">
       <img
-        src={image || fallbackImage} // Using fallback image if image is not available
+        src={image || fallbackImage}
         alt={title}
         className="w-full h-48 object-cover"
       />
@@ -31,25 +30,44 @@ function PostAll({ title, description, image }: PostProps) {
         <button className="text-blue-500 hover:underline">
           Baca Selengkapnya →
         </button>
+        {/* <button className="ml-16 hover:text-red-500">delete</button> */}
       </div>
     </div>
   );
 }
 
 export default function Posts() {
-  const [posts, setPosts] = useState<Post[]>([]); // Menyimpan data posts dengan tipe Post
-  const [loading, setLoading] = useState<boolean>(true); // Menyimpan status loading
-  const [error, setError] = useState<string | null>(null); // State for errors
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/posts");
-        setPosts(response.data); // Mengambil data dari response axios
-        setLoading(false);
-      } catch (error: any) {
-        console.error("Error fetching posts:", error);
-        setError("Failed to load posts. Please try again later.");
+        const token = localStorage.getItem("token"); // Ambil token dari localStorage
+        if (!token) {
+          setError("Unauthorized: Silakan login terlebih dahulu.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:5000/api/auth/posts",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setPosts(response.data);
+      } catch (err: any) {
+        if (err.response) {
+          if (err.response.status === 401) {
+            setError("Unauthorized: Silakan login terlebih dahulu.");
+          }
+        } else {
+          setError("Terjadi kesalahan saat menghubungi server.");
+        }
+      } finally {
         setLoading(false);
       }
     };
@@ -62,26 +80,6 @@ export default function Posts() {
       <p className="text-xl mb-8 text-start">Blog Posts Terbaru</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Post Pertama - Lebar & Panjang */}
-        <div className="lg:col-span-2 row-span-2 bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300  transition-transform hover:scale-105">
-          <img
-            src="https://images.pexels.com/photos/675920/pexels-photo-675920.jpeg?cs=srgb&dl=pexels-minan1398-675920.jpg&fm=jpg"
-            alt="Gambar Blog"
-            className="w-full h-84 object-cover"
-          />
-          <div className="p-6">
-            <h2 className="text-3xl font-bold mb-4">Judul Post Utama</h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              Ini adalah deskripsi singkat dari post utama. Karena ini post
-              penting, kamu bisa tulis lebih banyak dan detail di sini buat
-              menarik perhatian pembaca!
-            </p>
-            <button className="text-blue-500 hover:underline">
-              Baca Selengkapnya →
-            </button>
-          </div>
-        </div>
-
         {/* Display Error */}
         {error && (
           <div className="col-span-1 lg:col-span-3 text-center text-red-500 p-4">
@@ -91,16 +89,17 @@ export default function Posts() {
 
         {/* Loading Spinner */}
         {loading ? (
-          <p className="text-center text-gray-500">Loading posts...</p>
+          <p className="text-center text-gray-500 animate-pulse">
+            Loading posts...
+          </p>
         ) : posts.length === 0 ? (
-          // Menampilkan pesan jika tidak ada post
           <p className="col-span-1 lg:col-span-3 text-center text-gray-500">
             Tidak ada data post yang ditemukan.
           </p>
         ) : (
           posts.map((post) => (
             <PostAll
-              key={post.id} // Menggunakan id sebagai key
+              key={post._id}
               title={post.title}
               description={post.description}
               image={post.image}

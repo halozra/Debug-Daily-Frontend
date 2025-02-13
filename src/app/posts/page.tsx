@@ -1,17 +1,16 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client'
+import React, { useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
 // Definisikan tipe untuk Post
 interface Post {
-  id: number;
   title: string;
   description: string;
   image: string;
 }
 
-function PostAll({ title, description, image }: Omit<Post, "id">) {
+function PostAll({ title, description, image }: Post) {
   const fallbackImage = "https://via.placeholder.com/150"; // Fallback image URL
 
   return (
@@ -34,57 +33,53 @@ function PostAll({ title, description, image }: Omit<Post, "id">) {
 
 export default function Posts() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // State untuk pesan sukses
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // State untuk Form
-  const [newPost, setNewPost] = useState<Omit<Post, "id">>({
+  const [newPost, setNewPost] = useState({
     title: "",
     description: "",
     image: "",
   });
 
-  // Fetch Posts dari API
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/posts");
-        setPosts(response.data);
-        setLoading(false);
-      } catch (error: any) {
-        console.error("Error fetching posts:", error);
-        setError("Failed to load posts. Please try again later.");
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, []);
-
-  // Handle Submit Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setError(null); // Reset error before submitting
+    setLoading(true); // Show loading state
+
     try {
-      const response = await axios.post("http://localhost:3001/posts", {
-        id: Date.now(), // Menggunakan timestamp sebagai ID unik
-        ...newPost,
-      });
+      const token = localStorage.getItem("token");
 
-      setPosts([response.data.post, ...posts]); // Tambahkan post baru ke list
-      setNewPost({ title: "", description: "", image: "" }); // Reset form
-      setSuccessMessage(
-        "Post berhasil ditambahkan! Mengarahkan ke halaman utama..."
-      ); // Tampilkan pesan sukses
+      if (!token) {
+        setError("No token found. Please login first.");
+        setLoading(false);
+        return;
+      }
 
-      // Redirect ke root directory setelah 2 detik
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/create-post",
+        {
+          title: newPost.title,
+          description: newPost.description,
+          image: newPost.image,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 201) {
+        setSuccessMessage("Post berhasil ditambahkan!");
+      }
     } catch (error) {
       console.error("Error adding post:", error);
       setError("Failed to add post. Please try again.");
+    } finally {
+      setLoading(false); // Hide loading state
     }
   };
 
@@ -96,6 +91,13 @@ export default function Posts() {
         {successMessage && (
           <p className="bg-green-100 text-green-700 p-4 rounded-lg mb-4 text-center">
             {successMessage}
+          </p>
+        )}
+
+        {/* Pesan Error */}
+        {error && (
+          <p className="bg-red-100 text-red-700 p-4 rounded-lg mb-4 text-center">
+            {error}
           </p>
         )}
 
@@ -134,8 +136,9 @@ export default function Posts() {
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+            disabled={loading} // Disable the button when loading
           >
-            Tambah Post
+            {loading ? "Loading..." : "Tambah Post"}
           </button>
         </form>
       </div>
