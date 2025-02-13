@@ -59,7 +59,7 @@ export default function Posts() {
       }
 
       const response = await axios.post(
-        "https://debug-daily-backend.vercel.app/api/auth/create-post",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/create-post`,
         {
           title: newPost.title,
           description: newPost.description,
