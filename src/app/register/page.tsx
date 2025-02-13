@@ -2,42 +2,28 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const router = useRouter()
-  
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`https://debug-daily-backend.vercel.app/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          name,
-        }),
-      });
+      const response = await axios.post(
+        "https://debug-daily-backend.vercel.app/api/auth/register",
+        { email, password, name },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      // Handle response and errors more explicitly
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Registration failed:", errorData.message || errorData);
-        return;
-      }
-
-      const data = await response.json();
-      alert("User registered successfully:");
-      router.push("/login")
-    } catch (error) {
-      console.error("An error occurred:", error);
+      alert("User registered successfully");
+      router.push("/login");
+    } catch (error: any) {
+      console.error("Registration failed:", error.response?.data?.message || error.message);
     }
   };
 
@@ -49,10 +35,7 @@ const LoginPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-600"
-              >
+              <label htmlFor="name" className="block text-sm font-medium text-gray-600">
                 Name
               </label>
               <input
@@ -65,10 +48,7 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-600"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-600">
                 Email
               </label>
               <input
@@ -81,10 +61,7 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div className="mb-6">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-600"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-600">
                 Password
               </label>
               <input
@@ -100,9 +77,12 @@ const LoginPage: React.FC = () => {
               type="submit"
               className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none"
             >
-              Log In
+              Register
             </button>
-            <p className="m-5">You Have Account?<a href="/login" className="ml-3 hover:text-green-500">Login</a></p>
+            <p className="m-5">
+              You Have an Account?
+              <a href="/login" className="ml-3 hover:text-green-500">Login</a>
+            </p>
           </form>
         </div>
       </div>
