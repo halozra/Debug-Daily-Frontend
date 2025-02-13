@@ -26,7 +26,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-20 shadow-md h-[70px] w-full bg-gray-950 flex justify-between md:justify-around items-center text-white font-serif px-6">
+    <nav className="relative top-0 z-20 shadow-md h-[70px] w-full bg-gray-950 flex justify-between md:justify-around items-center text-white font-serif px-6">
       <div>
         <span className="text-[30px] hover:text-amber-400 font-bold">
           halozra();
