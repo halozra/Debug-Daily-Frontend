@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "https://debug-daily-backend.vercel.app/api/auth/register",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
         { email, password, name },
         { headers: { "Content-Type": "application/json" } }
       );
