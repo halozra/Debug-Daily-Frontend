@@ -52,7 +52,7 @@ export default function Posts() {
         }
 
         const response = await axios.get(
-          "http://localhost:5000/api/auth/posts",
+          "https://debug-daily-backend.vercel.app/api/auth/posts",
           {
             headers: { Authorization: `Bearer ${token}` },
           }

@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", credentials);
+      const response = await axios.post("https://debug-daily-backend.vercel.app/api/auth/login", credentials);
       const token = response.data.token;
       localStorage.setItem("token", token);
       alert("Login successful!");
