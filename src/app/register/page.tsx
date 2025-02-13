@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+      const response = await fetch(`https://debug-daily-backend.vercel.app/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
